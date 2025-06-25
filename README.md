@@ -11,7 +11,8 @@ cd Chip8
 
 2. 
 ```
-mkdir build & cd build
+mkdir build
+cd build
 cmake ..
 make
 ```
