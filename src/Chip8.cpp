@@ -1,9 +1,11 @@
+#include "chrono"
+#include "cstring"
+#include "fstream"
+#include "ios"
+#include "iostream"
+#include "stdexcept"
+#include "string"
 #include <Chip8.hpp>
-#include <fstream>
-#include <ios>
-#include <iostream>
-#include <stdexcept>
-#include <string>
 
 const unsigned int START_ADDRESS = 0x200;
 const unsigned int FONTSET_START_ADDRESS = 0x50;
