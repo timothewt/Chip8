@@ -9,11 +9,13 @@ public:
     /**
      * @return true if the player continues false if he leaves
      */
-    bool processInput();
+    bool processInput(uint8_t* keys);
 
 private:
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Event e;
     SDL_Texture* texture;
+
+    void retrieveKeys(uint8_t* keys);
 };

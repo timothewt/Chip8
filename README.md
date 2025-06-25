@@ -1,7 +1,8 @@
-# Chip8
-Chip-8 emulator in C++
+# Chip-8 Emulator
 
-# How to use
+Chip-8 emulator in C++.
+
+## How to use
 
 1. Clone the repository
 ```
@@ -19,9 +20,12 @@ make
 
 3. Start the program with one of the available ROMs
 ```
-./chip8 ../roms/ibm.ch8
+./chip8 ../roms/tetris.ch8
 ```
 
+## To Do
+
+- Implement the beeping sound
 
 ## Dependencies
 
@@ -36,3 +40,4 @@ MIT License
 - [Guide to making a CHIP-8 emulator](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/)
 - [Building a CHIP-8 Emulator \[C++\]
 ](https://austinmorlan.com/posts/chip8_emulator/#function-pointer-table)
+- [Chip-8 ROMs](https://github.com/kripod/chip8-roms/tree/master)

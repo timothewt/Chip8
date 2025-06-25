@@ -11,20 +11,32 @@ public:
     uint16_t pc {};
     uint16_t index {};
     uint16_t stack[16] {};
+    uint8_t sp {};
     uint8_t delayTimer {};
     uint8_t soundTimer {};
     uint8_t registers[16] {};
     uint16_t opcode;
+    uint8_t keys[16] {};
     std::default_random_engine randGen;
     std::uniform_int_distribution<uint8_t> randByte;
+
+    bool replaceVXWhenShift { false };
+    bool modernBXNN { false };
 
     Chip8();
 
     void loadROM(char const* filename);
     void cycle();
+    void updateTimers();
 
 private:
     void decodeAndExecute();
+
+    uint8_t getX();
+    uint8_t getY();
+    uint8_t getN();
+    uint8_t getNN();
+    uint16_t getNNN();
 
     void OP_00E0();
     void OP_00EE();
@@ -41,8 +53,8 @@ private:
     void OP_8XY3();
     void OP_8XY4();
     void OP_8XY5();
-    void OP_8XY7();
     void OP_8XY6();
+    void OP_8XY7();
     void OP_8XYE();
     void OP_9XY0();
     void OP_ANNN();
