@@ -23,10 +23,6 @@ make
 ./chip8 ../roms/tetris.ch8
 ```
 
-## To Do
-
-- Implement the beeping sound
-
 ## Dependencies
 
 - SDL2

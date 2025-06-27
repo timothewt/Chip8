@@ -1,6 +1,5 @@
 #include "SDL2/SDL.h"
-#include "SDL_render.h"
-#include "SDL_video.h"
+#include "cmath"
 #include <DisplayRenderer.hpp>
 
 DisplayRenderer::DisplayRenderer(int width, int height, int pixelSize)
@@ -9,6 +8,19 @@ DisplayRenderer::DisplayRenderer(int width, int height, int pixelSize)
     window = SDL_CreateWindow("Chip-8 Emulator", 100, 100, width * pixelSize, height * pixelSize, SDL_WINDOW_ALLOW_HIGHDPI);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+
+    SDL_InitSubSystem(SDL_INIT_AUDIO);
+
+    SDL_AudioSpec desiredSpec, obtainedSpec;
+    desiredSpec.freq = 44100;
+    desiredSpec.format = AUDIO_S16SYS;
+    desiredSpec.channels = 1;
+    desiredSpec.samples = 512;
+    desiredSpec.callback = nullptr;
+
+    audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desiredSpec, &obtainedSpec, 0);
+
+    SDL_PauseAudioDevice(audioDevice, 0);
 }
 
 DisplayRenderer::~DisplayRenderer()
@@ -16,6 +28,7 @@ DisplayRenderer::~DisplayRenderer()
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_DestroyTexture(texture);
+    SDL_CloseAudioDevice(audioDevice);
     SDL_Quit();
 }
 
@@ -37,9 +50,34 @@ bool DisplayRenderer::processInput(uint8_t* keys)
     return true;
 }
 
+void DisplayRenderer::playBeep()
+{
+    if (!audioDevice)
+        return;
+
+    const int sampleRate = 44100;
+    const int freq = 440;
+    const int duration = 100;
+    const int samples = (sampleRate * duration) / 1000;
+
+    int16_t* buffer = new int16_t[samples];
+
+    for (int i = 0; i < samples; i++) {
+        double time = (double)i / sampleRate;
+        buffer[i] = (int16_t)(32767 * 0.3 * sin(2.0 * M_PI * freq * time));
+    }
+
+    SDL_QueueAudio(audioDevice, buffer, samples * sizeof(int16_t));
+    delete[] buffer;
+}
+
+void DisplayRenderer::stopBeep()
+{
+    SDL_ClearQueuedAudio(audioDevice);
+}
+
 void DisplayRenderer::retrieveKeys(uint8_t* keys)
 {
-
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
     keys[0] = state[SDL_SCANCODE_1];

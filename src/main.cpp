@@ -46,6 +46,10 @@ int main(int argc, char* argv[])
             lastTimersTime = currentTime;
             chip8.updateTimers();
             displayRenderer.update(chip8.display, pitch);
+            if (chip8.soundTimer > 0)
+                displayRenderer.playBeep();
+            else
+                displayRenderer.stopBeep();
         }
 
     } while (running);
