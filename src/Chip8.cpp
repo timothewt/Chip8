@@ -1,10 +1,9 @@
 #include "chrono"
 #include "cstring"
 #include "fstream"
-#include "ios"
 #include "iostream"
 #include "stdexcept"
-#include "string"
+#include "vector"
 #include <Chip8.hpp>
 
 const unsigned int START_ADDRESS = 0x200;
@@ -35,32 +34,28 @@ Chip8::Chip8()
 {
     pc = START_ADDRESS;
 
-    for (int i = 0; i < FONTSET_SIZE; ++i) {
+    for (int i = 0; i < FONTSET_SIZE; ++i)
         memory[FONTSET_START_ADDRESS + i] = fontset[i];
-    }
 }
 
 void Chip8::loadROM(char const* path)
 {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
 
-    if (file.is_open()) {
-        std::streampos size = file.tellg();
-
-        char* buffer = new char[size];
-
-        file.seekg(0, std::ios::beg);
-        file.read(buffer, size);
-        file.close();
-
-        for (int i = 0; i < size; ++i) {
-            memory[START_ADDRESS + i] = buffer[i];
-        }
-
-        delete[] buffer;
-    } else {
+    if (!file.is_open()) {
         throw std::runtime_error(std::string("Failed to open ROM file:") + path);
+        return;
     }
+    std::streampos size = file.tellg();
+    if (size > 4096 - START_ADDRESS)
+        throw std::runtime_error(std::string("Failed to open ROM file:") + path + std::string(". ROM too large."));
+
+    std::vector<char> buffer(size);
+    file.seekg(0, std::ios::beg);
+    file.read(buffer.data(), size);
+
+    for (int i = 0; i < size; ++i)
+        memory[START_ADDRESS + i] = buffer[i];
 }
 
 void Chip8::cycle()
@@ -376,10 +371,10 @@ void Chip8::OP_DXYN()
                 *currentPixel ^= 0xFFFFFFFFu;
             }
 
-            if (x + col == WIDTH)
+            if (x + col >= WIDTH)
                 break;
         }
-        if (y + row == HEIGHT)
+        if (y + row >= HEIGHT)
             break;
     }
 }
@@ -424,8 +419,9 @@ void Chip8::OP_FX18()
 
 void Chip8::OP_FX1E()
 {
-    registers[0xF] = (index + registers[getX()]) > 0xFFFu;
-    index += registers[getX()];
+    uint16_t sum = index + registers[getX()];
+    registers[0xF] = sum > 0xFFFu;
+    index = sum & 0xFFFu;
 }
 
 void Chip8::OP_FX29()

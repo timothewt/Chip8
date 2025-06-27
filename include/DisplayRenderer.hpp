@@ -1,24 +1,65 @@
+/**
+ * @file DisplayRenderer.hpp
+ * @brief Declaration of the DisplayRenderer class.
+ *
+ * @author Timothé Watteau
+ */
 #pragma once
 #include "SDL2/SDL.h"
 
+/**
+ * @brief Display Renderer class. Used to display the current content of the display buffer of the Chip-8.
+ */
 class DisplayRenderer {
 public:
+    /**
+     * @brief Constructor for the Display Renderer.
+     *
+     *  Initializes all SDL components (i.e., the window, renderer, texture and sound device).
+     *
+     * @param width Width of the emulated screen.
+     * @param height Height of the emulated screen.
+     * @param pixelSize The number of displayed pixels on the screen per emulated screen pixel.
+     *
+     */
     DisplayRenderer(int width, int height, int pixelSize);
     ~DisplayRenderer();
+    /**
+     * @brief Updates the current render.
+     *
+     * Updates the current render based on the current content of the Chip-8 display.
+     *
+     * @param buffer Current Chip-8 display buffer.
+     * @param pitch Number of bytes per pixel data in the buffer.
+     */
     void update(const uint32_t* buffer, int pitch);
     /**
-     * @return true if the player continues false if he leaves
+     * @brief Processes the current input from the player.
+     *
+     * @param keys The array storing the keys state (1 for pressed, else 0) in the Chip-8.
+     * @return false if the player closed the window, true otherwise.
      */
     bool processInput(uint8_t* keys);
+    /**
+     * @brief Starts a beeping sound.
+     */
     void playBeep();
+    /**
+     * @brief Stops the beeping sound.
+     */
     void stopBeep();
 
 private:
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    SDL_Event e;
-    SDL_Texture* texture;
-    SDL_AudioDeviceID audioDevice;
+    SDL_Window* window; /**< SDL window insance. */
+    SDL_Renderer* renderer; /**< SDL renderer instance. */
+    SDL_Event e; /**< SDL event, used to poll the quit event. */
+    SDL_Texture* texture; /**< SDL texture, used to copy and render the Chip-8 display buffer. */
+    SDL_AudioDeviceID audioDevice; /**< SDL audio device used to make a beeping sound. */
 
+    /**
+     * @brief Retrieves the state of all keys for the Chip-8.
+     *
+     * @param keys The array storing the keys state (1 for pressed, else 0) in the Chip-8.
+     */
     void retrieveKeys(uint8_t* keys);
 };

@@ -1,14 +1,14 @@
 #include "chrono"
+#include "iostream"
+#include "stdexcept"
+#include "string"
 #include <Chip8.hpp>
 #include <DisplayRenderer.hpp>
-#include <iostream>
-#include <stdexcept>
-#include <string>
 
 int main(int argc, char* argv[])
 {
     if (argc != 2 && argc != 3) {
-        std::cout << "Please call the program as: " << argv[0] << " [ROM path] [CPU Frequency [Optional]]" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <ROM path> [CPU Frequency]" << std::endl;
         throw std::runtime_error("ROM file not specified.");
     }
     int cpuFrequency {};

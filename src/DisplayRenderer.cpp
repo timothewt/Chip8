@@ -1,5 +1,6 @@
 #include "SDL2/SDL.h"
 #include "cmath"
+#include "vector"
 #include <DisplayRenderer.hpp>
 
 DisplayRenderer::DisplayRenderer(int width, int height, int pixelSize)
@@ -60,15 +61,11 @@ void DisplayRenderer::playBeep()
     const int duration = 100;
     const int samples = (sampleRate * duration) / 1000;
 
-    int16_t* buffer = new int16_t[samples];
+    std::vector<int16_t> buffer(samples);
+    for (int i = 0; i < samples; i++)
+        buffer[i] = static_cast<int16_t>(32767 * 0.3 * sin(2.0 * M_PI * freq * (double)i / sampleRate));
 
-    for (int i = 0; i < samples; i++) {
-        double time = (double)i / sampleRate;
-        buffer[i] = (int16_t)(32767 * 0.3 * sin(2.0 * M_PI * freq * time));
-    }
-
-    SDL_QueueAudio(audioDevice, buffer, samples * sizeof(int16_t));
-    delete[] buffer;
+    SDL_QueueAudio(audioDevice, buffer.data(), buffer.size() * sizeof(int16_t));
 }
 
 void DisplayRenderer::stopBeep()
