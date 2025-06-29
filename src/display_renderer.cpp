@@ -1,28 +1,28 @@
-#include "DisplayRenderer.hpp"
+#include "display_renderer.hpp"
 #include <SDL2/SDL.h>
 #include <array>
 #include <cmath>
 #include <vector>
 
-DisplayRenderer::DisplayRenderer(int width, int height, int pixelSize)
+DisplayRenderer::DisplayRenderer(int width, int height, int pixel_size)
 {
     SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow("Chip-8 Emulator", 100, 100, width * pixelSize, height * pixelSize, SDL_WINDOW_ALLOW_HIGHDPI);
+    window = SDL_CreateWindow("Chip-8 Emulator", 100, 100, width * pixel_size, height * pixel_size, SDL_WINDOW_ALLOW_HIGHDPI);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, height);
 
     SDL_InitSubSystem(SDL_INIT_AUDIO);
 
-    SDL_AudioSpec desiredSpec, obtainedSpec;
-    desiredSpec.freq = 44100;
-    desiredSpec.format = AUDIO_S16SYS;
-    desiredSpec.channels = 1;
-    desiredSpec.samples = 512;
-    desiredSpec.callback = nullptr;
+    SDL_AudioSpec desired_spec, obtained_spec;
+    desired_spec.freq = 44100;
+    desired_spec.format = AUDIO_S16SYS;
+    desired_spec.channels = 1;
+    desired_spec.samples = 512;
+    desired_spec.callback = nullptr;
 
-    audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desiredSpec, &obtainedSpec, 0);
+    audio_device = SDL_OpenAudioDevice(nullptr, 0, &desired_spec, &obtained_spec, 0);
 
-    SDL_PauseAudioDevice(audioDevice, 0);
+    SDL_PauseAudioDevice(audio_device, 0);
 }
 
 DisplayRenderer::~DisplayRenderer()
@@ -30,7 +30,7 @@ DisplayRenderer::~DisplayRenderer()
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_DestroyTexture(texture);
-    SDL_CloseAudioDevice(audioDevice);
+    SDL_CloseAudioDevice(audio_device);
     SDL_Quit();
 }
 
@@ -42,39 +42,39 @@ void DisplayRenderer::update(const uint32_t* buffer, int pitch)
     SDL_RenderPresent(renderer);
 }
 
-bool DisplayRenderer::processInput(std::array<uint8_t, 16>& keys)
+bool DisplayRenderer::process_input(std::array<uint8_t, 16>& keys)
 {
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT)
             return false;
     }
-    retrieveKeys(keys);
+    retrieve_keys(keys);
     return true;
 }
 
-void DisplayRenderer::playBeep()
+void DisplayRenderer::play_beep()
 {
-    if (!audioDevice)
+    if (!audio_device)
         return;
 
-    const int sampleRate = 44100;
+    const int sample_rate = 44100;
     const int freq = 440;
     const int duration = 100;
-    const int samples = (sampleRate * duration) / 1000;
+    const int samples = (sample_rate * duration) / 1000;
 
     std::vector<int16_t> buffer(samples);
     for (int i = 0; i < samples; i++)
-        buffer[i] = static_cast<int16_t>(32767 * 0.3 * sin(2.0 * M_PI * freq * (double)i / sampleRate));
+        buffer[i] = static_cast<int16_t>(32767 * 0.3 * sin(2.0 * M_PI * freq * (double)i / sample_rate));
 
-    SDL_QueueAudio(audioDevice, buffer.data(), buffer.size() * sizeof(int16_t));
+    SDL_QueueAudio(audio_device, buffer.data(), buffer.size() * sizeof(int16_t));
 }
 
-void DisplayRenderer::stopBeep()
+void DisplayRenderer::stop_beep()
 {
-    SDL_ClearQueuedAudio(audioDevice);
+    SDL_ClearQueuedAudio(audio_device);
 }
 
-void DisplayRenderer::retrieveKeys(std::array<uint8_t, 16>& keys)
+void DisplayRenderer::retrieve_keys(std::array<uint8_t, 16>& keys)
 {
     const Uint8* state = SDL_GetKeyboardState(NULL);
 

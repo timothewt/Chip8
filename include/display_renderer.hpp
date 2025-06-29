@@ -20,10 +20,10 @@ public:
      *
      * @param width Width of the emulated screen.
      * @param height Height of the emulated screen.
-     * @param pixelSize The number of displayed pixels on the screen per emulated screen pixel.
+     * @param pixel_size The number of displayed pixels on the screen per emulated screen pixel.
      *
      */
-    DisplayRenderer(int width, int height, int pixelSize);
+    DisplayRenderer(int width, int height, int pixel_size);
     ~DisplayRenderer();
     /**
      * @brief Updates the current render.
@@ -40,21 +40,21 @@ public:
      * @param keys The array storing the keys state (1 for pressed, else 0) in the Chip-8.
      * @return false if the player closed the window, true otherwise.
      */
-    bool processInput(std::array<uint8_t, 16>& keys);
+    bool process_input(std::array<uint8_t, 16>& keys);
     /**
      * @brief Starts a beeping sound.
      */
-    void playBeep();
+    void play_beep();
     /**
      * @brief Stops the beeping sound.
      */
-    void stopBeep();
+    void stop_beep();
 
 private:
     SDL_Window* window; /**< SDL window insance. */
     SDL_Renderer* renderer; /**< SDL renderer instance. */
     SDL_Texture* texture; /**< SDL texture, used to copy and render the Chip-8 display buffer. */
-    SDL_AudioDeviceID audioDevice { 0 }; /**< SDL audio device used to make a beeping sound. */
+    SDL_AudioDeviceID audio_device { 0 }; /**< SDL audio device used to make a beeping sound. */
     SDL_Event e; /**< SDL event, used to poll the quit event. */
 
     /**
@@ -62,5 +62,5 @@ private:
      *
      * @param keys The array storing the keys state (1 for pressed, else 0) in the Chip-8.
      */
-    void retrieveKeys(std::array<uint8_t, 16>& keys);
+    void retrieve_keys(std::array<uint8_t, 16>& keys);
 };

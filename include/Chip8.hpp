@@ -39,7 +39,7 @@ constexpr std::array<uint8_t, FONTSET_SIZE> fontset = {
 class Chip8 {
 public:
     std::array<uint32_t, WIDTH * HEIGHT> display {}; /**< Current display of the Chip-8. */
-    uint8_t soundTimer {}; /**< Sound timer. Playing a sound while it is over 0. */
+    uint8_t sound_timer {}; /**< Sound timer. Playing a sound while it is over 0. */
     std::array<uint8_t, 16> keys {}; /**< Current state of the keys (1 if pressed, 0 otherwise). */
 
     /**
@@ -63,7 +63,7 @@ public:
     /**
      * @brief Updates the timers (delayTimer and soundTimer).
      */
-    void updateTimers();
+    void update_timers();
 
 private:
     std::array<uint8_t, 4096> memory {}; /**< 4kB memory of the Chip-8. */
@@ -71,16 +71,16 @@ private:
     uint16_t index {}; /**< Index register, pointing at locations in the memory */
     std::array<uint16_t, 16> stack {}; /**< Stack of instructions. */
     uint8_t sp {}; /**< Stack pointer. */
-    uint8_t delayTimer {}; /**< Delay timer decremented at each display refresh. */
+    uint8_t delay_timer {}; /**< Delay timer decremented at each display refresh. */
     std::array<uint8_t, 16> registers {}; /**< General purpose variable registers. */
     uint16_t opcode; /**< Current operation code read from the memory. */
-    std::default_random_engine randGen; /**< Random generator. */
-    std::uniform_int_distribution<uint8_t> randByte; /**< Generates a random byte. */
+    std::default_random_engine random_generator; /**< Random generator. */
+    std::uniform_int_distribution<uint8_t> random_byte; /**< Generates a random byte. */
 
-    bool replaceVXWhenShift { false }; /**< Whether to replace VX at operations 8XY6/8XYE, as in some implementations. */
-    bool modernBXNN { false }; /**< "Modern" way to do the BNNN operation. */
+    bool replace_vx_when_shift { false }; /**< Whether to replace VX at operations 8XY6/8XYE. */
+    bool modern_bxnn { false }; /**< "Modern" way to do the BNNN operation. */
 
-    std::unordered_map<uint8_t, std::function<void()>> opcodeTable {}; /**< Maps the operation codes to instructions */
+    std::unordered_map<uint8_t, std::function<void()>> opcode_table {}; /**< Maps the operation codes to instructions */
     std::unordered_map<uint8_t, std::function<void()>> table0 {}; /**< Maps the opcodes 0 to the correct instruction. */
     std::unordered_map<uint8_t, std::function<void()>> table8 {}; /**< Maps the opcodes 8 to the correct instruction. */
     std::unordered_map<uint8_t, std::function<void()>> tableE {}; /**< Maps the opcodes E to the correct instruction. */
@@ -89,78 +89,78 @@ private:
     /**
      * @brief Sets up the operation codes table used when decoding.
      */
-    void setupOpcodeTable();
+    void setup_opcode_table();
     /**
      * @brief Decodes and execute the current instruction.
      */
     void
-    decodeAndExecute();
+    decode_and_execute();
     /**
      * @brief Extracts the X component (second nibble) from the current opcode.
      *
      * @return The X value (0x0 to 0xF).
      */
-    uint8_t getX();
+    uint8_t get_x();
     /**
      * @brief Extracts the Y component (third nibble) from the current opcode.
      *
      * @return The Y value (0x0 to 0xF).
      */
-    uint8_t getY();
+    uint8_t get_y();
     /**
      * @brief Extracts the N component (fourth nibble) from the current opcode.
      *
      * @return The N value (0x0 to 0xF).
      */
-    uint8_t getN();
+    uint8_t get_n();
     /**
      * @brief Extracts the NN component (last byte) from the current opcode.
      *
      * @return The NN value (0x00 to 0xFF).
      */
-    uint8_t getNN();
+    uint8_t get_nn();
     /**
      * @brief Extracts the NNN component (lowest 12 bits) from the current opcode.
      *
      * @return The NNN address (0x000 to 0xFFF).
      */
-    uint16_t getNNN();
+    uint16_t get_nnn();
     /**
      * All the operations availables. Please refer to https://tobiasvl.github.io/blog/write-a-chip-8-emulator/ for more
      * information.
      */
-    void OP_00E0();
-    void OP_00EE();
-    void OP_1NNN();
-    void OP_2NNN();
-    void OP_3XNN();
-    void OP_4XNN();
-    void OP_5XY0();
-    void OP_6XNN();
-    void OP_7XNN();
-    void OP_8XY0();
-    void OP_8XY1();
-    void OP_8XY2();
-    void OP_8XY3();
-    void OP_8XY4();
-    void OP_8XY5();
-    void OP_8XY6();
-    void OP_8XY7();
-    void OP_8XYE();
-    void OP_9XY0();
-    void OP_ANNN();
-    void OP_BNNN();
-    void OP_CXNN();
-    void OP_DXYN();
-    void OP_EX9E();
-    void OP_EXA1();
-    void OP_FX07();
-    void OP_FX0A();
-    void OP_FX15();
-    void OP_FX18();
-    void OP_FX1E();
-    void OP_FX29();
-    void OP_FX33();
-    void OP_FX55();
-    void OP_FX65();
+    void op_00e0();
+    void op_00ee();
+    void op_1nnn();
+    void op_2nnn();
+    void op_3xnn();
+    void op_4xnn();
+    void op_5xy0();
+    void op_6xnn();
+    void op_7xnn();
+    void op_8xy0();
+    void op_8xy1();
+    void op_8xy2();
+    void op_8xy3();
+    void op_8xy4();
+    void op_8xy5();
+    void op_8xy6();
+    void op_8xy7();
+    void op_8xye();
+    void op_9xy0();
+    void op_annn();
+    void op_bnnn();
+    void op_cxnn();
+    void op_dxyn();
+    void op_ex9e();
+    void op_exa1();
+    void op_fx07();
+    void op_fx0a();
+    void op_fx15();
+    void op_fx18();
+    void op_fx1e();
+    void op_fx29();
+    void op_fx33();
+    void op_fx55();
+    void op_fx65();
 };
