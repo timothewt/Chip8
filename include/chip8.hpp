@@ -55,7 +55,7 @@ public:
      * @param filename Path of the Chip-8 ROM file (.ch8).
      * @throws std::runtime_error if the ROM file could not be opened, or if it is too large.
      */
-    void loadROM(char const* filename);
+    void load_rom(char const* filename);
     /**
      * @brief Makes a fetch->decode->execute cycle.
      */

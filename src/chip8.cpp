@@ -17,7 +17,7 @@ Chip8::Chip8()
     setup_opcode_table();
 }
 
-void Chip8::loadROM(char const* path)
+void Chip8::load_rom(char const* path)
 {
     if (!std::filesystem::exists(path))
         throw std::runtime_error(std::string("ROM file does not exist:") + path);

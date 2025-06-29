@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 
     DisplayRenderer display_renderer { WIDTH, HEIGHT, 20 };
     Chip8 chip8 {};
-    chip8.loadROM(rom_path);
+    chip8.load_rom(rom_path);
     int pitch = sizeof(chip8.display[0]) * WIDTH;
 
     bool running;
