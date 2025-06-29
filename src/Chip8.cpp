@@ -1,61 +1,33 @@
-#include "chrono"
-#include "cstring"
-#include "fstream"
-#include "iostream"
-#include "stdexcept"
-#include "vector"
-#include <Chip8.hpp>
-
-const unsigned int START_ADDRESS = 0x200;
-const unsigned int FONTSET_START_ADDRESS = 0x50;
-const unsigned int FONTSET_SIZE = 80;
-
-uint8_t fontset[FONTSET_SIZE] = {
-    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-    0x20, 0x60, 0x20, 0x20, 0x70, // 1
-    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-    0xF0, 0x80, 0xF0, 0x80, 0x80 // F
-};
+#include "Chip8.hpp"
+#include <chrono>
+#include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
 
 Chip8::Chip8()
     : randGen(std::chrono::system_clock::now().time_since_epoch().count())
 {
-    pc = START_ADDRESS;
+    pc = ROM_START_ADDRESS;
 
     for (int i = 0; i < FONTSET_SIZE; ++i)
         memory[FONTSET_START_ADDRESS + i] = fontset[i];
+
+    setupOpcodeTable();
 }
 
 void Chip8::loadROM(char const* path)
 {
-    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    if (!std::filesystem::exists(path))
+        throw std::runtime_error(std::string("ROM file does not exist:") + path);
 
-    if (!file.is_open()) {
-        throw std::runtime_error(std::string("Failed to open ROM file:") + path);
-        return;
-    }
-    std::streampos size = file.tellg();
-    if (size > 4096 - START_ADDRESS)
-        throw std::runtime_error(std::string("Failed to open ROM file:") + path + std::string(". ROM too large."));
+    uintmax_t size = std::filesystem::file_size(path);
+    if (size > 4096 - ROM_START_ADDRESS)
+        throw std::runtime_error(std::string("ROM file too large:") + path);
 
-    std::vector<char> buffer(size);
-    file.seekg(0, std::ios::beg);
-    file.read(buffer.data(), size);
-
-    for (int i = 0; i < size; ++i)
-        memory[START_ADDRESS + i] = buffer[i];
+    std::ifstream file(path, std::ios::binary);
+    file.read(reinterpret_cast<char*>(memory.data() + ROM_START_ADDRESS), size);
 }
 
 void Chip8::cycle()
@@ -74,128 +46,56 @@ void Chip8::updateTimers()
         --soundTimer;
 }
 
+void Chip8::setupOpcodeTable()
+{
+    table0[0xE0] = [this]() { OP_00E0(); };
+    table0[0xEE] = [this]() { OP_00EE(); };
+
+    table8[0x0] = [this]() { OP_8XY0(); };
+    table8[0x1] = [this]() { OP_8XY1(); };
+    table8[0x2] = [this]() { OP_8XY2(); };
+    table8[0x3] = [this]() { OP_8XY3(); };
+    table8[0x4] = [this]() { OP_8XY4(); };
+    table8[0x5] = [this]() { OP_8XY5(); };
+    table8[0x6] = [this]() { OP_8XY6(); };
+    table8[0x7] = [this]() { OP_8XY7(); };
+    table8[0xE] = [this]() { OP_8XYE(); };
+
+    tableE[0xE] = [this]() { OP_EX9E(); };
+    tableE[0x1] = [this]() { OP_EXA1(); };
+
+    tableF[0x07] = [this]() { OP_FX07(); };
+    tableF[0x0A] = [this]() { OP_FX0A(); };
+    tableF[0x15] = [this]() { OP_FX15(); };
+    tableF[0x18] = [this]() { OP_FX18(); };
+    tableF[0x1E] = [this]() { OP_FX1E(); };
+    tableF[0x29] = [this]() { OP_FX29(); };
+    tableF[0x33] = [this]() { OP_FX33(); };
+    tableF[0x55] = [this]() { OP_FX55(); };
+    tableF[0x65] = [this]() { OP_FX65(); };
+
+    opcodeTable[0x0] = [this]() { table0[getNN()](); };
+    opcodeTable[0x1] = [this]() { OP_1NNN(); };
+    opcodeTable[0x2] = [this]() { OP_2NNN(); };
+    opcodeTable[0x3] = [this]() { OP_3XNN(); };
+    opcodeTable[0x4] = [this]() { OP_4XNN(); };
+    opcodeTable[0x5] = [this]() { OP_5XY0(); };
+    opcodeTable[0x6] = [this]() { OP_6XNN(); };
+    opcodeTable[0x7] = [this]() { OP_7XNN(); };
+    opcodeTable[0x8] = [this]() { table8[getN()](); };
+    opcodeTable[0x9] = [this]() { OP_9XY0(); };
+    opcodeTable[0xA] = [this]() { OP_ANNN(); };
+    opcodeTable[0xB] = [this]() { OP_BNNN(); };
+    opcodeTable[0xC] = [this]() { OP_CXNN(); };
+    opcodeTable[0xD] = [this]() { OP_DXYN(); };
+    opcodeTable[0xE] = [this]() { tableE[getN()](); };
+    opcodeTable[0xF] = [this]() { tableF[getNN()](); };
+}
+
 void Chip8::decodeAndExecute()
 {
     uint8_t opType = (opcode & 0xF000u) >> 12u;
-
-    switch (opType) {
-    case 0:
-        if (opcode == 0x00E0)
-            OP_00E0();
-        else if (opcode == 0x00EE)
-            OP_00EE();
-        break;
-    case 1:
-        OP_1NNN();
-        break;
-    case 2:
-        OP_2NNN();
-        break;
-    case 3:
-        OP_3XNN();
-        break;
-    case 4:
-        OP_4XNN();
-        break;
-    case 5:
-        if (!getN())
-            OP_5XY0();
-        break;
-    case 6:
-        OP_6XNN();
-        break;
-    case 7:
-        OP_7XNN();
-        break;
-    case 8:
-        switch (getN()) {
-        case 0:
-            OP_8XY0();
-            break;
-        case 1:
-            OP_8XY1();
-            break;
-        case 2:
-            OP_8XY2();
-            break;
-        case 3:
-            OP_8XY3();
-            break;
-        case 4:
-            OP_8XY4();
-            break;
-        case 5:
-            OP_8XY5();
-            break;
-        case 6:
-            OP_8XY6();
-            break;
-        case 7:
-            OP_8XY7();
-            break;
-        case 0xE:
-            OP_8XYE();
-            break;
-        }
-        break;
-    case 9:
-        if (!getN())
-            OP_9XY0();
-        break;
-    case 0xA:
-        OP_ANNN();
-        break;
-    case 0xB:
-        OP_BNNN();
-        break;
-    case 0xC:
-        OP_CXNN();
-        break;
-    case 0xD:
-        OP_DXYN();
-        break;
-    case 0xE:
-        switch (getNN()) {
-        case 0x9E:
-            OP_EX9E();
-            break;
-        case 0xA1:
-            OP_EXA1();
-            break;
-        }
-        break;
-    case 0xF:
-        switch (getNN()) {
-        case 0x07:
-            OP_FX07();
-            break;
-        case 0x0A:
-            OP_FX0A();
-            break;
-        case 0x15:
-            OP_FX15();
-            break;
-        case 0x18:
-            OP_FX18();
-            break;
-        case 0x1E:
-            OP_FX1E();
-            break;
-        case 0x29:
-            OP_FX29();
-            break;
-        case 0x33:
-            OP_FX33();
-            break;
-        case 0x55:
-            OP_FX55();
-            break;
-        case 0x65:
-            OP_FX65();
-            break;
-        }
-        break;
-    }
+    opcodeTable[opType]();
 }
 
 uint8_t Chip8::getX()
@@ -225,7 +125,7 @@ uint16_t Chip8::getNNN()
 
 void Chip8::OP_00E0()
 {
-    memset(display, 0, sizeof(display));
+    display.fill(0);
 }
 
 void Chip8::OP_00EE()

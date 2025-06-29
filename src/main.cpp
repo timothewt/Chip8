@@ -1,9 +1,9 @@
-#include "chrono"
-#include "iostream"
-#include "stdexcept"
-#include "string"
-#include <Chip8.hpp>
-#include <DisplayRenderer.hpp>
+#include "Chip8.hpp"
+#include "DisplayRenderer.hpp"
+#include <chrono>
+#include <iostream>
+#include <stdexcept>
+#include <string>
 
 int main(int argc, char* argv[])
 {
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
         if (timersDt >= timerDelayMs) {
             lastTimersTime = currentTime;
             chip8.updateTimers();
-            displayRenderer.update(chip8.display, pitch);
+            displayRenderer.update(chip8.display.data(), pitch);
             if (chip8.soundTimer > 0)
                 displayRenderer.playBeep();
             else

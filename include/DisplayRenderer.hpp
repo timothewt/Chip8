@@ -5,7 +5,8 @@
  * @author Timothé Watteau
  */
 #pragma once
-#include "SDL2/SDL.h"
+#include <SDL2/SDL.h>
+#include <array>
 
 /**
  * @brief Display Renderer class. Used to display the current content of the display buffer of the Chip-8.
@@ -39,7 +40,7 @@ public:
      * @param keys The array storing the keys state (1 for pressed, else 0) in the Chip-8.
      * @return false if the player closed the window, true otherwise.
      */
-    bool processInput(uint8_t* keys);
+    bool processInput(std::array<uint8_t, 16>& keys);
     /**
      * @brief Starts a beeping sound.
      */
@@ -52,14 +53,14 @@ public:
 private:
     SDL_Window* window; /**< SDL window insance. */
     SDL_Renderer* renderer; /**< SDL renderer instance. */
-    SDL_Event e; /**< SDL event, used to poll the quit event. */
     SDL_Texture* texture; /**< SDL texture, used to copy and render the Chip-8 display buffer. */
-    SDL_AudioDeviceID audioDevice; /**< SDL audio device used to make a beeping sound. */
+    SDL_AudioDeviceID audioDevice { 0 }; /**< SDL audio device used to make a beeping sound. */
+    SDL_Event e; /**< SDL event, used to poll the quit event. */
 
     /**
      * @brief Retrieves the state of all keys for the Chip-8.
      *
      * @param keys The array storing the keys state (1 for pressed, else 0) in the Chip-8.
      */
-    void retrieveKeys(uint8_t* keys);
+    void retrieveKeys(std::array<uint8_t, 16>& keys);
 };

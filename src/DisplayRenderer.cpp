@@ -1,7 +1,8 @@
-#include "SDL2/SDL.h"
-#include "cmath"
-#include "vector"
-#include <DisplayRenderer.hpp>
+#include "DisplayRenderer.hpp"
+#include <SDL2/SDL.h>
+#include <array>
+#include <cmath>
+#include <vector>
 
 DisplayRenderer::DisplayRenderer(int width, int height, int pixelSize)
 {
@@ -41,7 +42,7 @@ void DisplayRenderer::update(const uint32_t* buffer, int pitch)
     SDL_RenderPresent(renderer);
 }
 
-bool DisplayRenderer::processInput(uint8_t* keys)
+bool DisplayRenderer::processInput(std::array<uint8_t, 16>& keys)
 {
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT)
@@ -73,7 +74,7 @@ void DisplayRenderer::stopBeep()
     SDL_ClearQueuedAudio(audioDevice);
 }
 
-void DisplayRenderer::retrieveKeys(uint8_t* keys)
+void DisplayRenderer::retrieveKeys(std::array<uint8_t, 16>& keys)
 {
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
